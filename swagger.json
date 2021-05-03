@@ -1,0 +1,1106 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Co-WIN Public APIs",
+    "description": "Co-WIN Public APIs to find appointment availabilty and to download vaccination certificates. These APIs are available for use by all third party applications. <i>[Updated on 30 Apr 2021]</i>",
+    "termsOfService": "https://www.cowin.gov.in/terms-condition",
+    "contact": {
+      "name": "Ministry of Health and Family Welfare",
+      "url": "https://www.cowin.gov.in"
+    },
+    "version": "1.1.0"
+  },
+  "servers": [
+    {
+      "url": "https://cdn-api.co-vin.in/api",
+      "description": "Production Server"
+    }
+  ],
+  "paths": {
+    "/v2/auth/public/generateOTP": {
+      "post": {
+        "tags": [
+          "User Authentication APIs"
+        ],
+        "summary": "Authenticate a beneficiary by Mobile/OTP",
+        "description": "Initiate beneficiary authentication using mobile and OTP",
+        "operationId": "generateOTP",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mobile": {
+                    "type": "string",
+                    "minItems": 1,
+                    "example": "9876543210"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "txnId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "minItems": 1,
+                      "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "errorCode": {
+                      "type": "string",
+                      "example": "USRRES0001"
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "Input parameter missing"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated access!"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/v2/auth/public/confirmOTP": {
+      "post": {
+        "tags": [
+          "User Authentication APIs"
+        ],
+        "summary": "Confirm mobile OTP for authentication",
+        "description": "API to confirm the OTP for authentication.",
+        "operationId": "confirmOTP",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "otp": {
+                    "type": "string",
+                    "minLength": 64,
+                    "example": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
+                    "description": "SHA256 of the OTP"
+                  },
+                  "txnId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "errorCode": {
+                      "type": "string",
+                      "example": "USRRES0001"
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "Input parameter missing"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated Access"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/v2/admin/location/states": {
+      "get": {
+        "tags": [
+          "Metadata APIs"
+        ],
+        "summary": "Get states",
+        "description": "API to get all the states in India.",
+        "operationId": "states",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Accept-Language",
+            "example": "hi_IN",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The locate code of the preferred language such as en_US. The text data will be returned in the preferred language along with default English text."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "states": {
+                      "type": "array",
+                      "minItems": 1,
+                      "uniqueItems": true,
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "state_id": {
+                            "type": "number",
+                            "example": 58
+                          },
+                          "state_name": {
+                            "type": "string",
+                            "minLength": 1,
+                            "example": "Andaman and Nicobar Islands"
+                          },
+                          "state_name_l": {
+                            "type": "string",
+                            "minLength": 1,
+                            "example": "",
+                            "description": "State name in preferred language as specified in Accept-Language header parameter."
+                          }
+                        },
+                        "required": [
+                          "state_id",
+                          "state_name"
+                        ]
+                      }
+                    },
+                    "ttl": {
+                      "type": "number",
+                      "description": "Time in hours to cache the data. Client applications can use this data for this many number of hours before calling this API again."
+                    }
+                  }
+                }
+              },
+              "examples": {}
+            }
+          },
+          "401": {
+            "description": "Unauthenticated access!"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/v2/admin/location/districts/{state_id}": {
+      "get": {
+        "tags": [
+          "Metadata APIs"
+        ],
+        "summary": "Get list of districts",
+        "description": "API to get all the districts.",
+        "operationId": "districts",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Accept-Language",
+            "required": false,
+            "example": "hi_IN",
+            "schema": {
+              "type": "string"
+            },
+            "description": "The locate code of the preferred language such as en_US. The text data will be returned in the preferred language along with default English text."
+          },
+          {
+            "name": "state_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": 16
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "districts": {
+                      "type": "array",
+                      "minItems": 1,
+                      "uniqueItems": true,
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "state_id": {
+                            "type": "number",
+                            "example": 16
+                          },
+                          "district_id": {
+                            "type": "number",
+                            "example": 391
+                          },
+                          "district_name": {
+                            "type": "string",
+                            "minLength": 1,
+                            "example": "Ahmednagar"
+                          },
+                          "district_name_l": {
+                            "type": "string",
+                            "minLength": 1,
+                            "example": "",
+                            "description": "District name in preferred language as specified in Accept-Language header parameter."
+                          }
+                        },
+                        "required": [
+                          "district_id",
+                          "district_name"
+                        ]
+                      }
+                    },
+                    "ttl": {
+                      "type": "number",
+                      "description": "Time in hours to cache the data. Client applications can use this data for this many number of hours before calling this API again."
+                    }
+                  }
+                }
+              },
+              "examples": {}
+            }
+          },
+          "401": {
+            "description": "Unauthenticated access!"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/v2/appointment/sessions/public/findByPin": {
+      "get": {
+        "tags": [
+          "Appointment Availability APIs"
+        ],
+        "summary": "Get vaccination sessions by PIN",
+        "description": "API to get planned vaccination sessions on a specific date in a given pin.",
+        "operationId": "findByPin",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Accept-Language",
+            "required": false,
+            "example": "hi_IN",
+            "description": "The locate code of the preferred language such as en_US. The text data will be returned in the preferred language along with default English text.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pincode",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 3,
+              "example": "110001"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "31-03-2021"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "sessions": {
+                      "$ref": "#/components/schemas/SessionsSchema"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "errorCode": {
+                      "type": "string",
+                      "example": "USRRES0001"
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "Input parameter missing"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated Access"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/v2/appointment/sessions/public/findByDistrict": {
+      "get": {
+        "tags": [
+          "Appointment Availability APIs"
+        ],
+        "summary": "Get vaccination sessions by district",
+        "description": "API to get planned vaccination sessions on a specific date in a given district.",
+        "operationId": "findByDistrict",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Accept-Language",
+            "required": false,
+            "example": "hi_IN",
+            "description": "The locate code of the preferred language such as en_US. The text data will be returned in the preferred language along with default English text.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "district_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 3,
+              "example": "512"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "31-03-2021"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "sessions": {
+                      "$ref": "#/components/schemas/SessionsSchema"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "errorCode": {
+                      "type": "string",
+                      "example": "USRRES0001"
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "Input parameter missing"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated Access"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/v2/appointment/sessions/public/calendarByPin": {
+      "get": {
+        "tags": [
+          "Appointment Availability APIs"
+        ],
+        "summary": "Get vaccination sessions by PIN for 7 days",
+        "description": "API to get planned vaccination sessions for 7 days from a specific date in a given pin.",
+        "operationId": "calendarByPin",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Accept-Language",
+            "required": false,
+            "example": "hi_IN",
+            "description": "The locate code of the preferred language such as en_US. The text data will be returned in the preferred language along with default English text.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pincode",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 3,
+              "example": "110001"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "31-03-2021"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "centers": {
+                      "$ref": "#/components/schemas/SessionCalendarEntriesSchema"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "errorCode": {
+                      "type": "string",
+                      "example": "USRRES0001"
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "Input parameter missing"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated Access"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/v2/appointment/sessions/public/calendarByDistrict": {
+      "get": {
+        "tags": [
+          "Appointment Availability APIs"
+        ],
+        "summary": "Get vaccination sessions by district for 7 days",
+        "description": "API to get planned vaccination sessions for 7 days from a specific date in a given district.",
+        "operationId": "calendarByDistrict",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Accept-Language",
+            "required": false,
+            "example": "hi_IN",
+            "description": "The locate code of the preferred language such as en_US. The text data will be returned in the preferred language along with default English text.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "district_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 3,
+              "example": "512"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "31-03-2021"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "centers": {
+                      "$ref": "#/components/schemas/SessionCalendarEntriesSchema"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "errorCode": {
+                      "type": "string",
+                      "example": "USRRES0001"
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "Input parameter missing"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated Access"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/v2/registration/certificate/public/download": {
+      "get": {
+        "tags": [
+          "Certificate APIs"
+        ],
+        "summary": "Download vaccination certificate in PDF format by beneficiary reference id",
+        "description": "API to download vaccination certificate in PDF format by beneficiary reference id. This API requires a <i>Bearer</i> token acquired with user mobile OTP validation as defined in User Authentication APIs.",
+        "operationId": "download",
+        "parameters": [
+          {
+            "name": "beneficiary_reference_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": 1234567890123
+            }
+          }
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Operation",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary",
+                  "example": "Binary content of PDF file"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "errorCode": {
+                      "type": "string",
+                      "example": "USRRES0001"
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "Input parameter missing"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated Access"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CenterResponseSchema": {
+        "type": "object",
+        "required": [
+          "center_id",
+          "name",
+          "state_name",
+          "district_name",
+          "block_name",
+          "pincode",
+          "from",
+          "to",
+          "fee_type"
+        ],
+        "properties": {
+          "center_id": {
+            "type": "number",
+            "minLength": 1,
+            "example": 1234
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "example": "District General Hostpital"
+          },
+          "name_l": {
+            "type": "string",
+            "minLength": 1,
+            "example": "",
+            "description": "Name in preferred language as specified in Accept-Language header parameter."
+          },
+          "state_name": {
+            "type": "string",
+            "example": "Maharashtra"
+          },
+          "state_name_l": {
+            "type": "string",
+            "minLength": 1,
+            "example": "",
+            "description": "State name in preferred language as specified in Accept-Language header parameter."
+          },
+          "district_name": {
+            "type": "string",
+            "example": "Satara"
+          },
+          "district_name_l": {
+            "type": "string",
+            "minLength": 1,
+            "example": "",
+            "description": "District name in preferred language as specified in Accept-Language header parameter."
+          },
+          "block_name": {
+            "type": "string",
+            "example": "Jaoli"
+          },
+          "block_name_l": {
+            "type": "string",
+            "minLength": 1,
+            "example": "",
+            "description": "Block name in preferred language as specified in Accept-Language header parameter."
+          },
+          "pincode": {
+            "type": "string",
+            "example": "413608"
+          },
+          "lat": {
+            "type": "number",
+            "format": "float",
+            "minimum": 8.06,
+            "maximum": 37.1,
+            "example": 28.7
+          },
+          "long": {
+            "type": "number",
+            "format": "float",
+            "minimum": 68.11,
+            "maximum": 97.41,
+            "example": 77.1
+          },
+          "from": {
+            "type": "string",
+            "format": "partial-time",
+            "example": "09:00:00"
+          },
+          "to": {
+            "type": "string",
+            "format": "partial-time",
+            "example": "18:00:00"
+          },
+          "fee_type": {
+            "type": "string",
+            "enum": [
+              "Free",
+              "Paid"
+            ],
+            "example": "Paid",
+            "description": "Fee charged for vaccination"
+          }
+        }
+      },
+      "SessionsSchema": {
+        "type": "array",
+        "uniqueItems": true,
+        "items": {
+          "$ref": "#/components/schemas/SessionResponseSchema"
+        }
+      },
+      "SessionResponseSchema": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CenterResponseSchema"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "fee": {
+                "type": "string",
+                "example": "250"
+              },
+              "session_id": {
+                "type": "string",
+                "format": "uuid",
+                "minLength": 1
+              },
+              "date": {
+                "type": "string",
+                "minLength": 1,
+                "example": "31-05-2021"
+              },
+              "available_capacity": {
+                "type": "number",
+                "example": 50
+              },
+              "min_age_limit": {
+                "type": "number",
+                "example": 18
+              },
+              "vaccine": {
+                "type": "string",
+                "example": "COVISHIELD"
+              },
+              "slots": {
+                "type": "array",
+                "uniqueItems": true,
+                "minItems": 1,
+                "description": "Array of slot names",
+                "example": [
+                  "FORENOON",
+                  "AFTERNOON"
+                ],
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "center_id",
+              "name",
+              "state_name",
+              "district_name",
+              "block_name",
+              "pincode",
+              "from",
+              "to",
+              "fee_type",
+              "fee",
+              "session_id",
+              "date",
+              "available_capacity",
+              "min_age_limit",
+              "vaccine",
+              "slots"
+            ]
+          }
+        ]
+      },
+      "SessionCalendarEntriesSchema": {
+        "type": "array",
+        "uniqueItems": true,
+        "items": {
+          "$ref": "#/components/schemas/SessionCalendarEntrySchema"
+        }
+      },
+      "SessionCalendarEntrySchema": {
+        "type": "object",
+        "required": [
+          "center_id",
+          "name",
+          "state_name",
+          "district_name",
+          "block_name",
+          "pincode",
+          "from",
+          "to",
+          "fee_type",
+          "sessions"
+        ],
+        "properties": {
+          "center_id": {
+            "type": "number",
+            "minLength": 1,
+            "example": 1234
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "example": "District General Hostpital"
+          },
+          "name_l": {
+            "type": "string",
+            "minLength": 1,
+            "example": "",
+            "description": "Name in preferred language as specified in Accept-Language header parameter."
+          },
+          "state_name": {
+            "type": "string",
+            "example": "Maharashtra"
+          },
+          "state_name_l": {
+            "type": "string",
+            "minLength": 1,
+            "example": "",
+            "description": "State name in preferred language as specified in Accept-Language header parameter."
+          },
+          "district_name": {
+            "type": "string",
+            "example": "Satara"
+          },
+          "district_name_l": {
+            "type": "string",
+            "minLength": 1,
+            "example": "",
+            "description": "District name in preferred language as specified in Accept-Language header parameter."
+          },
+          "block_name": {
+            "type": "string",
+            "example": "Jaoli"
+          },
+          "block_name_l": {
+            "type": "string",
+            "minLength": 1,
+            "example": "",
+            "description": "Block name in preferred language as specified in Accept-Language header parameter."
+          },
+          "pincode": {
+            "type": "string",
+            "example": "413608"
+          },
+          "lat": {
+            "type": "number",
+            "format": "float",
+            "minimum": 8.06,
+            "maximum": 37.1,
+            "example": 28.7
+          },
+          "long": {
+            "type": "number",
+            "format": "float",
+            "minimum": 68.11,
+            "maximum": 97.41,
+            "example": 77.1
+          },
+          "from": {
+            "type": "string",
+            "format": "partial-time",
+            "example": "09:00:00"
+          },
+          "to": {
+            "type": "string",
+            "format": "partial-time",
+            "example": "18:00:00"
+          },
+          "fee_type": {
+            "type": "string",
+            "enum": [
+              "Free",
+              "Paid"
+            ],
+            "example": "Free",
+            "description": "Fee charged for vaccination"
+          },
+          "vaccine_fees": {
+            "$ref": "#/components/schemas/VaccineFeeListSchema"
+          },
+          "sessions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "session_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "minLength": 1
+                },
+                "date": {
+                  "type": "string",
+                  "minLength": 1,
+                  "example": "31-05-2021"
+                },
+                "available_capacity": {
+                  "type": "number",
+                  "example": 50
+                },
+                "min_age_limit": {
+                  "type": "number",
+                  "example": 18
+                },
+                "vaccine": {
+                  "type": "string",
+                  "example": "COVISHIELD"
+                },
+                "slots": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "minItems": 1,
+                  "description": "Array of slot names",
+                  "example": [
+                    "FORENOON",
+                    "AFTERNOON"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "from",
+                "to",
+                "fee_type",
+                "session_id",
+                "date",
+                "available_capacity",
+                "fee",
+                "min_age_limit",
+                "vaccine",
+                "slots"
+              ]
+            }
+          }
+        }
+      },
+      "VaccineFeeListSchema": {
+        "type": "array",
+        "uniqueItems": true,
+        "items": {
+          "$ref": "#/components/schemas/VaccineFeeSchema"
+        }
+      },
+      "VaccineFeeSchema": {
+        "type": "object",
+        "required": [
+          "vaccine",
+          "fee"
+        ],
+        "properties": {
+          "vaccine": {
+            "type": "string",
+            "example": "COVISHIELD"
+          },
+          "fee": {
+            "type": "string",
+            "example": "250"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}
